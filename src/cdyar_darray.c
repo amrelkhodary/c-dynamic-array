@@ -3,6 +3,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
+
 
 /*
     internal function
@@ -32,6 +34,47 @@ static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
                                         cdyar_returncode *code) {
   // don't forget to update arr->length after resize!
   // dont't forget to update code!
+
+  //check code is not null
+  CDYAR_CHECK_CODE(code);
+
+  //check arr is not null
+  if(!arr) {
+      *code=CDYAR_INVALID_INPUT;
+      return;
+  }
+
+  //check that there exists a static elements array inside the dynamic array structure
+  if(!arr->elements) {
+      *code=CDYAR_INVALID_INPUT;
+      return;
+  }
+
+  //TODO: Check overflow
+  check_sizet_overflow(3, code, arr->length, 2, arr->typesize);
+  if(*code != CDYAR_SUCCESSFUL) {
+      return;
+  }
+
+  //bounds checking
+  //check that index is within the range the warrants a resize as specified by this policy
+  //i.e. check that length <= index <= length * 2
+  if(! (index >= arr->length && index <= arr->length * 2) ) {
+      *code=CDYAR_RESIZE_POLICY_INVALID_RANGE;
+      return;
+  }
+
+  //resize the array
+  void* elements_temp = realloc(arr->elements, arr->length * arr->typesize * 2);
+  if(!elements_temp) {
+     *code=CDYAR_MEMORY_ERROR;
+     return;
+  }
+  arr->elements = elements_temp;
+
+  //make sure to double the length
+  arr->length*=2;
+  *code=CDYAR_SUCCESSFUL;
 }
 
 /*

@@ -2,13 +2,15 @@
 #define H_CDYAR_DARRAY
 #define CDYAR_DEFAULT_RESIZE_POLICY NULL
 
+#include "./cdyar_arithmetic.h" //for check_sizet_overflow called in cdyar_default_resize_policy
 #include "./cdyar_error.h" //to be able to use cdyar_returncode type + to access error return codes
 #include "./cdyar_structures.h" //for cdyar_flag
 #include "./cdyar_types.h"
-#include <stdlib.h>             //to be able to use size_t
+#include <stdlib.h> //to be able to use size_t
 
-//resize policy function type
-typedef void (*cdyar_resizepolicy)(struct cdyar_darray* arr, const size_t index, cdyar_returncode* code);
+// resize policy function type
+typedef void (*cdyar_resizepolicy)(struct cdyar_darray *arr, const size_t index,
+                                   cdyar_returncode *code);
 
 // dynamic array type
 typedef struct cdyar_darray {
