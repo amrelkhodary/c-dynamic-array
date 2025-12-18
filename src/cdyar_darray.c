@@ -40,13 +40,13 @@ static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
 
   //check arr is not null
   if(!arr) {
-      *code=CDYAR_INVALID_INPUT;
+      *code=CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
       return;
   }
 
   //check that there exists a static elements array inside the dynamic array structure
   if(!arr->elements) {
-      *code=CDYAR_INVALID_INPUT;
+      *code=CDYAR_CORRUPTED_DYNAMIC_ARR;
       return;
   }
 
@@ -70,6 +70,9 @@ static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
      *code=CDYAR_MEMORY_ERROR;
      return;
   }
+
+  //zero out the new portion of the array
+  memset(((char*)arr->elements) + (arr->typesize * arr->length), 0, (arr->typesize * arr->length));
   arr->elements = elements_temp;
 
   //make sure to double the length
@@ -170,23 +173,26 @@ cdyar_darray *cdyar_narr(const size_t typesize, const size_t length,
    report any error (if any) returns: void
 */
 void cdyar_darr(cdyar_darray *arr, cdyar_returncode *code) {
+  *code=CDYAR_SUCCESSFUL;
+
   // make sure code is not null
   CDYAR_CHECK_CODE(code);
 
   // make sure arr is not null
   if (!arr) {
-    *code = CDYAR_INVALID_INPUT;
+    *code = CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
     return;
   }
 
   // if the inner array exists, free it
   if (arr->elements) {
     free(arr->elements);
+  } else {
+      *code=CDYAR_CORRUPTED_DYNAMIC_ARR;
   }
 
   // free the dynamic array
   free(arr);
-  *code = CDYAR_SUCCESSFUL;
 }
 
 /*
@@ -205,7 +211,7 @@ void cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr,
 
   // check that arr is not null
   if (!arr) {
-    *code = CDYAR_INVALID_INPUT;
+    *code = CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
     return;
   }
 
@@ -217,31 +223,31 @@ void cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr,
 
   // check that typesize is not zero
   if (arr->typesize == 0) {
-    *code = CDYAR_INVALID_INPUT;
+    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
     return;
   }
 
   // check for typesize overflow
   if (index > SIZE_MAX / arr->typesize) {
-    *code = CDYAR_INVALID_INPUT;
+    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
     return;
   }
 
   // check that an elements array actually exists within the dynamic array
   if (!arr->elements) {
-    *code = CDYAR_INVALID_INPUT;
+    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
     return;
   }
 
   // make sure a resize policy for the dynamic array exists
   if (!arr->policy) {
-    *code = CDYAR_INVALID_INPUT;
+    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
     return;
   }
 
   // make sure a type handler for the dynamic array exists
   if (!arr->handler) {
-    *code = CDYAR_INVALID_INPUT;
+    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
     return;
   }
 
@@ -271,7 +277,7 @@ void cdyar_get(const cdyar_darray *arr, const size_t index, void *outptr,
 
   // check arr is not null
   if (!arr) {
-    *code = CDYAR_INVALID_INPUT;
+    *code = CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
     return;
   }
 
@@ -283,25 +289,25 @@ void cdyar_get(const cdyar_darray *arr, const size_t index, void *outptr,
 
   // check that the typesize is not zero
   if (arr->typesize == 0) {
-    *code = CDYAR_INVALID_INPUT;
+    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
     return;
   }
 
   // chcek for typesize overflow
   if (index > SIZE_MAX / arr->typesize) {
-    *code = CDYAR_INVALID_INPUT;
+    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
     return;
   }
 
   // check that an elements array actually exists within the static array
   if (!arr->elements) {
-    *code = CDYAR_INVALID_INPUT;
+    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
     return;
   }
 
   // check that there is a handler function in the dynamic array
   if (!arr->handler) {
-    *code = CDYAR_INVALID_INPUT;
+    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
     return;
   }
 
