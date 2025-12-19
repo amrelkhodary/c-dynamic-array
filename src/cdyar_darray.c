@@ -72,8 +72,8 @@ static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
   }
 
   //zero out the new portion of the array
-  memset(((char*)arr->elements) + (arr->typesize * arr->length), 0, (arr->typesize * arr->length));
   arr->elements = elements_temp;
+  memset(((char*)arr->elements) + (arr->typesize * arr->length), 0, (arr->typesize * arr->length));
 
   //make sure to double the length
   arr->length*=2;
