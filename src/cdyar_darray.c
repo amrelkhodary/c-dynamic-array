@@ -278,7 +278,9 @@ void cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr,
     *code = CDYAR_ARR_OUT_OF_BOUNDS;
 
     // return if the automatic resizing is not allowed
-
+    if((arr->flags & CDYAR_ARR_AUTO_RESIZE) == 0) {
+        return;
+    }
     // invoke the dynamic array's resize policy
     arr->policy(arr, index, code);
   }
