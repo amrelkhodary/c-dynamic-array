@@ -8,6 +8,15 @@
 #include "./cdyar_types.h"
 #include <stdlib.h> //to be able to use size_t
 
+//enumeration of different flags that could be passed to the dynamic array
+enum cdyar_darray_binflags {
+    CDYAR_ARR_AUTO_RESIZE = 1,  //automatically resizes the if a set operation happened outside of bounds
+    CDYAR_ARR_NO_AUTO_RESIZE = 1 << 1,  //only allows resizing the array by manually calling the resizepolicy function
+    CDYAR_ARR_ABORT_ON_FAILURE = 1 << 2, //abort on any critical failure
+    CDYAR_ARR_NO_ABORT_ON_FAILURE = 1 << 3,  //only reports a failure through a code but doesn't abort
+
+};
+
 // resize policy function type
 typedef void (*cdyar_resizepolicy)(struct cdyar_darray *arr, const size_t index,
                                    cdyar_returncode *code);
