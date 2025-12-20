@@ -14,9 +14,13 @@
    or not
 */
 static cdyar_bool areFlagsValid(const cdyar_flag flags) {
-  // TODO: implement function
+    const cdyar_flag VALID_FLAGS_MASK =
+        CDYAR_ARR_AUTO_RESIZE |
+        CDYAR_ARR_NO_AUTO_RESIZE |
+        CDYAR_ARR_ABORT_ON_FAILURE |
+        CDYAR_ARR_NO_ABORT_ON_FAILURE;
 
-  return cdyar_true;
+    return (flags & ~VALID_FLAGS_MASK) == 0 ? cdyar_true : cdyar_false;
 }
 
 /*
