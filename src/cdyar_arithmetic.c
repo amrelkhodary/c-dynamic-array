@@ -65,7 +65,7 @@ void cdyar_check_uint_overflow(const size_t count, cdyar_returncode* code, ...) 
     unsigned int next;
     while(left != 0) {
        //get the next number to multiply, if it is zero, return (because there would be no overflow)
-       next = va_arg(args, size_t);
+       next = va_arg(args, unsigned int);
        if(next == 0) {
           va_end(args);
           *code=CDYAR_SUCCESSFUL;
@@ -75,7 +75,7 @@ void cdyar_check_uint_overflow(const size_t count, cdyar_returncode* code, ...) 
        //check for overflow
        if(temp_product > (UINT_MAX / next) ) {
           va_end(args);
-          *code=CDYAR_SIZE_T_OVERFLOW;
+          *code=CDYAR_UINT_OVERFLOW;
           return;
        }
 
