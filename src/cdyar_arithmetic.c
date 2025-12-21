@@ -1,6 +1,6 @@
 #include "../headers/cdyar_arithmetic.h"
 
-void check_sizet_overflow(const size_t count, cdyar_returncode* code, ...) {
+void cdyar_check_sizet_overflow(const size_t count, cdyar_returncode* code, ...) {
     //check code is not null
     CDYAR_CHECK_CODE(code);
 
