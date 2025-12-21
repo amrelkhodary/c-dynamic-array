@@ -340,7 +340,7 @@ void cdyar_get(const cdyar_darray *arr, const size_t index, void *outptr,
   }
 
   // bounds checking
-  if (index >= arr->length) {
+  if (index >= arr->capacity) {
     *code = CDYAR_ARR_OUT_OF_BOUNDS;
     return;
   }
