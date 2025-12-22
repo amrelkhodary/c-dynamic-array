@@ -1,38 +1,40 @@
-// #include "../headers/cdyar_types.h"
-// #include "../headers/cdyar_error.h"
+#include "../headers/cdyar_types.h"
 
-// void cdyar_inttypehandler(void *left_ptr, void *right_ptr, cdyar_flag direction, cdyar_returncode *code) {
-//     //check code is not null
-//     CDYAR_CHECK_CODE(code);
+// Character types
+CDYAR_DEFINE_TYPE_HANDLER(char, char)
+CDYAR_DEFINE_TYPE_HANDLER(signed char, schar)
+CDYAR_DEFINE_TYPE_HANDLER(unsigned char, uchar)
 
-//     //check left_ptr is not null
-//     if(!left_ptr) {
-//        *code=CDYAR_INVALID_INPUT;
-//        return;
-//     }
+// Integer types
+CDYAR_DEFINE_TYPE_HANDLER(short, short)
+CDYAR_DEFINE_TYPE_HANDLER(unsigned short, ushort)
+CDYAR_DEFINE_TYPE_HANDLER(int, int)
+CDYAR_DEFINE_TYPE_HANDLER(unsigned int, uint)
+CDYAR_DEFINE_TYPE_HANDLER(long, long)
+CDYAR_DEFINE_TYPE_HANDLER(unsigned long, ulong)
+CDYAR_DEFINE_TYPE_HANDLER(long long, llong)
+CDYAR_DEFINE_TYPE_HANDLER(unsigned long long, ullong)
 
-//     //check right_ptr is not null
-//     if(!right_ptr) {
-//         *code=CDYAR_INVALID_INPUT;
-//         return;
-//     }
+// Floating-point types
+CDYAR_DEFINE_TYPE_HANDLER(float, float)
+CDYAR_DEFINE_TYPE_HANDLER(double, double)
+CDYAR_DEFINE_TYPE_HANDLER(long double, ldouble)
 
-//    //cast left, right ptrs to int* type
-//    int* internal_leftptr = (int*) left_ptr;
-//    int* internal_rightptr = (int*) right_ptr;
+// Boolean type (C99)
+CDYAR_DEFINE_TYPE_HANDLER(_Bool, bool)
 
-//    //assign based on direction
-//    switch (direction) {
-//        case CDYAR_DIRECTION_ASSIGN_LEFT_TO_RIGHT:
-//             *internal_rightptr = *internal_leftptr;
-//             break;
-//        case CDYAR_DIRECTION_ASSIGN_RIGHT_TO_LEFT:
-//             *internal_leftptr = *internal_rightptr;
-//             break;
-//        default:
-//             *code=CDYAR_INVALID_INPUT;
-//             return;
-//    }
+// Fixed-width integer types (stdint.h)
+CDYAR_DEFINE_TYPE_HANDLER(int8_t, int8)
+CDYAR_DEFINE_TYPE_HANDLER(uint8_t, uint8)
+CDYAR_DEFINE_TYPE_HANDLER(int16_t, int16)
+CDYAR_DEFINE_TYPE_HANDLER(uint16_t, uint16)
+CDYAR_DEFINE_TYPE_HANDLER(int32_t, int32)
+CDYAR_DEFINE_TYPE_HANDLER(uint32_t, uint32)
+CDYAR_DEFINE_TYPE_HANDLER(int64_t, int64)
+CDYAR_DEFINE_TYPE_HANDLER(uint64_t, uint64)
 
-//    *code=CDYAR_SUCCESSFUL;
-// }
+// Size and pointer difference types
+CDYAR_DEFINE_TYPE_HANDLER(size_t, size)
+CDYAR_DEFINE_TYPE_HANDLER(ptrdiff_t, ptrdiff)
+CDYAR_DEFINE_TYPE_HANDLER(intptr_t, intptr)
+CDYAR_DEFINE_TYPE_HANDLER(uintptr_t, uintptr)

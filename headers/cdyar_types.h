@@ -1,6 +1,8 @@
 #ifndef H_CDYAR_TYPES
 #define H_CDYAR_TYPES
 #include <stdint.h>
+#include <stdbool.h>
+#include <stddef.h>
 #include "./cdyar_structures.h"
 
 //macro for creating typehandler functions
