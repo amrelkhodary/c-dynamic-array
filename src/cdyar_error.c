@@ -23,7 +23,7 @@ const char *cdyar_geterrmsg(cdyar_returncode *code) {
   CDYAR_CHECK_CODE(code);
 
   // check that code is within the allowed range
-  if (!(*code >= 0 && *code < CDYAR_ERR_CODE_COUNT)) {
+  if (!(*code < CDYAR_ERR_CODE_COUNT)) {
     return NULL;
   }
 
