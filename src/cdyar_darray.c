@@ -107,15 +107,16 @@ static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
    structure
 */
 cdyar_returncode cdyar_narr(const size_t typesize, const size_t capacity,
-               const cdyar_resizepolicy policy, const cdyar_typehandler handler,
-               const cdyar_flag flags, cdyar_darray *outptr) {
+                            const cdyar_resizepolicy policy,
+                            const cdyar_typehandler handler,
+                            const cdyar_flag flags, cdyar_darray *outptr) {
 
   // create a cdyar_returncode for the dynamic array so that
   cdyar_returncode *code = malloc(sizeof(cdyar_returncode));
-  if(!code) {
-      return CDYAR_MEMORY_ERROR;
+  if (!code) {
+    return CDYAR_MEMORY_ERROR;
   }
-  *code = CDYAR_SUCCESSFUL;  //default value of code
+  *code = CDYAR_SUCCESSFUL; // default value of code
 
   // make sure capacity passed is positive
   if (capacity == 0) {
@@ -153,7 +154,7 @@ cdyar_returncode cdyar_narr(const size_t typesize, const size_t capacity,
   // make sure handler is not null
   if (!handler) {
     free(code);
-    return CDYAR_INVALID_INPUT ;
+    return CDYAR_INVALID_INPUT;
   }
 
   // allocate memory for the new dynamic array structure
@@ -216,7 +217,7 @@ cdyar_returncode cdyar_darr(cdyar_darray *arr) {
     *arr->code = CDYAR_CORRUPTED_DYNAMIC_ARR;
   }
 
-  //free code
+  // free code
   cdyar_returncode tempcode = *arr->code;
   free(arr->code);
 
@@ -235,7 +236,8 @@ cdyar_returncode cdyar_darr(cdyar_darray *arr) {
    cdyar_returncode variable to store whether the function was successful or not
     returns: void
 */
-cdyar_returncode cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr) {
+cdyar_returncode cdyar_set(cdyar_darray *arr, const size_t index,
+                           void *valueptr) {
 
   // check that arr is not null
   if (!arr) {
@@ -307,108 +309,111 @@ cdyar_returncode cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr
   return *arr->code;
 }
 
-void cdyar_get(const cdyar_darray *arr, const size_t index, void *outptr,
-               cdyar_returncode *code) {
-  // check code is not null
-  CDYAR_CHECK_CODE(code);
-
+cdyar_returncode cdyar_get(const cdyar_darray *arr, const size_t index,
+                           void *outptr) {
   // check arr is not null
   if (!arr) {
-    *code = CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
-    return;
+    return CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
   }
+
+  // check code is not null
+  CDYAR_CHECK_CODE(arr->code);
 
   // check *outptr is not null
   if (!outptr) {
-    *code = CDYAR_INVALID_INPUT;
-    return;
+    *arr->code = CDYAR_INVALID_INPUT;
+    return CDYAR_INVALID_INPUT;
   }
 
   // check that the typesize is not zero
   if (arr->typesize == 0) {
-    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
-    return;
+    *arr->code = CDYAR_CORRUPTED_DYNAMIC_ARR;
+    return CDYAR_CORRUPTED_DYNAMIC_ARR;
   }
 
   // chcek for typesize overflow
   if (index > SIZE_MAX / arr->typesize) {
-    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
-    return;
+    *arr->code = CDYAR_CORRUPTED_DYNAMIC_ARR;
+    return CDYAR_CORRUPTED_DYNAMIC_ARR;
   }
 
   // check that an elements array actually exists within the static array
   if (!arr->elements) {
-    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
-    return;
+    *arr->code = CDYAR_CORRUPTED_DYNAMIC_ARR;
+    return CDYAR_CORRUPTED_DYNAMIC_ARR;
   }
 
   // check that there is a handler function in the dynamic array
   if (!arr->handler) {
-    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
-    return;
+    *arr->code = CDYAR_CORRUPTED_DYNAMIC_ARR;
+    return CDYAR_CORRUPTED_DYNAMIC_ARR;
   }
 
   // bounds checking
   if (index >= arr->capacity) {
-    *code = CDYAR_ARR_OUT_OF_BOUNDS;
-    return;
+    *arr->code = CDYAR_ARR_OUT_OF_BOUNDS;
+    return CDYAR_ARR_OUT_OF_BOUNDS;
   }
 
   // assign outptr to a pointer to the element in question in the array
   // void ptr converted to char* to suppress compiler warnings
   arr->handler(((char *)(arr->elements)) + (arr->typesize * index), outptr,
-               CDYAR_DIRECTION_ASSIGN_LEFT_TO_RIGHT, code);
+               CDYAR_DIRECTION_ASSIGN_LEFT_TO_RIGHT, arr->code);
 
   /**code=CDYAR_SUCCESSFUL*/ // uneccessary since handler will determine code
                              // anyways + it could hide handler failure`
+  return *arr->code;
 }
 
-void cdyar_setflags(cdyar_darray *arr, const cdyar_flag flags,
-                    cdyar_returncode *code) {
-  // check code is not null
-  CDYAR_CHECK_CODE(code);
+cdyar_returncode cdyar_setflags(cdyar_darray *arr, const cdyar_flag flags) {
 
   // check arr is not null
   if (!arr) {
-    *code = CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
-    return;
+    return CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
   }
+
+  // check code is not null
+  CDYAR_CHECK_CODE(arr->code);
 
   // make sure the flags are valid
   cdyar_bool flags_valid;
-  areFlagsValid(flags, &flags_valid, code);
-  if (*code != CDYAR_SUCCESSFUL) {
+  areFlagsValid(flags, &flags_valid, arr->code);
+  if (*arr->code != CDYAR_SUCCESSFUL) {
     // an issue occurred in areFlagsValid, propagte the error upwards
-    return;
+    return *arr->code;
   }
+
   if (!flags_valid) {
-    *code = CDYAR_INVALID_INPUT;
-    return;
+    *arr->code = CDYAR_INVALID_INPUT;
+    return CDYAR_INVALID_INPUT;
   }
 
   // set arr->flags to the new value and indicate success
   arr->flags = flags;
-  *code = CDYAR_SUCCESSFUL;
+  *arr->code = CDYAR_SUCCESSFUL;
+  return CDYAR_SUCCESSFUL;
 }
 
-void cdyar_setpolicy(cdyar_darray *arr, const cdyar_resizepolicy policy,
-                     cdyar_returncode *code) {
-  // check that code is not null
-  CDYAR_CHECK_CODE(code);
+cdyar_returncode cdyar_setpolicy(cdyar_darray *arr,
+                                 const cdyar_resizepolicy policy) {
 
   // check that arr is not null
   if (!arr) {
-    *code = CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
-    return;
+    return CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
   }
+
+  // check that code is not null
+  CDYAR_CHECK_CODE(arr->code);
 
   // check that policy is not null
   if (!policy) {
-    *code = CDYAR_INVALID_INPUT;
-    return;
+    *arr->code = CDYAR_INVALID_INPUT;
+    return CDYAR_INVALID_INPUT;
   }
 
   // assign new policy and indicate success
   arr->policy = policy;
-  *code = CDYAR_SUCCESSFUL;
+
+  *arr->code = CDYAR_SUCCESSFUL;
+  return CDYAR_SUCCESSFUL;
 }
