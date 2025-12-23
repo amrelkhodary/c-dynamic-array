@@ -38,7 +38,7 @@ int cdyar_narr(const size_t typesize, const size_t capacity,
                          const cdyar_typehandler handler,
                          const cdyar_flag flags, cdyar_darray* outptr
                          );
-void cdyar_darr(cdyar_darray *arr, cdyar_returncode *code);
+int cdyar_darr(cdyar_darray *arr);
 
 // setter and getter functions for safe array access and automatic bounds
 // checking

@@ -201,27 +201,29 @@ int cdyar_narr(const size_t typesize, const size_t capacity,
           2) cdyar_returncode* code: a pointer to a returncode variable to
    report any error (if any) returns: void
 */
-void cdyar_darr(cdyar_darray *arr, cdyar_returncode *code) {
-  *code = CDYAR_SUCCESSFUL;
-
-  // make sure code is not null
-  CDYAR_CHECK_CODE(code);
-
+int cdyar_darr(cdyar_darray *arr) {
   // make sure arr is not null
   if (!arr) {
-    *code = CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
-    return;
+    return CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
   }
+
+  CDYAR_CHECK_CODE(arr->code);
 
   // if the inner array exists, free it
   if (arr->elements) {
     free(arr->elements);
   } else {
-    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
+    *arr->code = CDYAR_CORRUPTED_DYNAMIC_ARR;
   }
+
+  //free code
+  cdyar_returncode tempcode = *arr->code;
+  free(arr->code);
 
   // free the dynamic array
   free(arr);
+
+  return tempcode;
 }
 
 /*
