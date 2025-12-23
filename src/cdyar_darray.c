@@ -79,7 +79,8 @@ static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
   }
 
   // resize the array
-  void *elements_temp = realloc(arr->elements, arr->capacity * arr->typesize * 2);
+  void *elements_temp =
+      realloc(arr->elements, arr->capacity * arr->typesize * 2);
   if (!elements_temp) {
     *code = CDYAR_MEMORY_ERROR;
     return;
@@ -105,65 +106,70 @@ static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
     returns: (type: cdyar_darray*) a pointer to the newly created dynamic array
    structure
 */
-cdyar_darray *cdyar_narr(const size_t typesize, const size_t capacity,
-                         const cdyar_resizepolicy policy,
-                         const cdyar_typehandler handler,
-                         const cdyar_flag flags, cdyar_returncode *code) {
+int cdyar_narr(const size_t typesize, const size_t capacity,
+               const cdyar_resizepolicy policy, const cdyar_typehandler handler,
+               const cdyar_flag flags, cdyar_darray *outptr) {
 
-  // make sure code is not null
-  CDYAR_CHECK_CODE(code);
+  // create a cdyar_returncode for the dynamic array so that
+  cdyar_returncode *code = malloc(sizeof(cdyar_returncode));
+  if(!code) {
+      return CDYAR_MEMORY_ERROR;
+  }
+  *code = CDYAR_SUCCESSFUL;  //default value of code
 
   // make sure capacity passed is positive
   if (capacity == 0) {
-    *code = CDYAR_INVALID_INPUT;
-    return NULL;
+    free(code);
+    return CDYAR_INVALID_INPUT;
   }
 
   // make sure typesize if a valid size
   if (typesize == 0) {
-    *code = CDYAR_INVALID_INPUT;
-    return NULL;
+    free(code);
+    return CDYAR_INVALID_INPUT;
   }
 
   // make sure there is no overflow
   if (capacity > SIZE_MAX / typesize) {
-    *code = CDYAR_INVALID_INPUT;
-    return NULL;
+    free(code);
+    return CDYAR_SIZE_T_OVERFLOW;
   }
 
   // make sure the flags are valid
   cdyar_bool flags_valid;
   areFlagsValid(flags, &flags_valid, code);
-  if(*code != CDYAR_SUCCESSFUL) {
-      //an issue occured in areFlagsValid, propagate the error upwards
-      return NULL;
+  cdyar_returncode tempcode = *code;
+  if (*code != CDYAR_SUCCESSFUL) {
+    // an issue occured in areFlagsValid, propagate the error upwards
+    free(code);
+    return tempcode;
   }
 
   if (!flags_valid) {
-    *code = CDYAR_INVALID_INPUT;
-    return NULL;
+    free(code);
+    return CDYAR_INVALID_INPUT;
   }
 
   // make sure handler is not null
   if (!handler) {
-    *code = CDYAR_INVALID_INPUT;
-    return NULL;
+    free(code);
+    return CDYAR_INVALID_INPUT ;
   }
 
   // allocate memory for the new dynamic array structure
   cdyar_darray *narr = (cdyar_darray *)malloc(sizeof(cdyar_darray));
   if (!narr) {
-    *code = CDYAR_MEMORY_ERROR;
-    return NULL;
+    free(code);
+    return CDYAR_MEMORY_ERROR;
   }
 
   // allocate memory for the new elements array inside the dynamic array
   // structure
   narr->elements = malloc(capacity * typesize);
   if (!narr->elements) {
-    *code = CDYAR_MEMORY_ERROR;
+    free(code);
     free(narr);
-    return NULL;
+    return CDYAR_MEMORY_ERROR;
   }
 
   // zero out all the elements inside the inner array
@@ -174,6 +180,7 @@ cdyar_darray *cdyar_narr(const size_t typesize, const size_t capacity,
   narr->typesize = typesize;
   narr->flags = flags;
   narr->length = 0;
+  narr->code = code;
 
   // assign resize policy
   if (policy == CDYAR_DEFAULT_RESIZE_POLICY) {
@@ -185,8 +192,7 @@ cdyar_darray *cdyar_narr(const size_t typesize, const size_t capacity,
   // assign type handler
   narr->handler = handler;
 
-  *code = CDYAR_SUCCESSFUL;
-  return narr;
+  return CDYAR_SUCCESSFUL;
 }
 
 /*
@@ -279,8 +285,8 @@ void cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr,
     *code = CDYAR_ARR_OUT_OF_BOUNDS;
 
     // return if the automatic resizing is not allowed
-    if((arr->flags & CDYAR_ARR_AUTO_RESIZE) == 0) {
-        return;
+    if ((arr->flags & CDYAR_ARR_AUTO_RESIZE) == 0) {
+      return;
     }
     // invoke the dynamic array's resize policy
     arr->policy(arr, index, code);
@@ -368,9 +374,9 @@ void cdyar_setflags(cdyar_darray *arr, const cdyar_flag flags,
   // make sure the flags are valid
   cdyar_bool flags_valid;
   areFlagsValid(flags, &flags_valid, code);
-  if(*code != CDYAR_SUCCESSFUL) {
-      //an issue occurred in areFlagsValid, propagte the error upwards
-      return;
+  if (*code != CDYAR_SUCCESSFUL) {
+    // an issue occurred in areFlagsValid, propagte the error upwards
+    return;
   }
   if (!flags_valid) {
     *code = CDYAR_INVALID_INPUT;
