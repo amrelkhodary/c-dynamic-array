@@ -1,13 +1,17 @@
 #ifndef H_CDYAR_ERROR
     #define H_CDYAR_ERROR
+    #define CDYAR_ERR_CODE_COUNT 12
 
     #include <stdio.h> //for fprintf in CDYAR_CHECK_CODE
     #include <stdlib.h>
+
+    typedef struct cdyar_darray cdyar_darray; //declaration for cdyar_status()
+
     //checking code is not null
     #define CDYAR_CHECK_CODE(code) \
         do { \
             if (!(code)) { \
-                fprintf(stderr, "FATAL: NULL error code pointer passed to %s\n", __func__); \
+                fprintf(stderr, "cdyar: FATAL: NULL error code pointer passed to %s\n", __func__); \
                 abort(); \
             } \
         } while(0)
@@ -31,4 +35,11 @@
 
     };
 
+    //array that contains all the error messages the correspond to different error codes
+    extern const char* CDYAR_ERR_MESSAGES[CDYAR_ERR_CODE_COUNT];
+
+    //functions for printing errors
+    const char* cdyar_geterrmsg(cdyar_returncode* code);
+    cdyar_returncode cdyar_printerrmsg(cdyar_returncode* code, FILE* destination);
+    cdyar_returncode cdyar_printstatus(cdyar_darray* arr, FILE* destination);
 #endif
