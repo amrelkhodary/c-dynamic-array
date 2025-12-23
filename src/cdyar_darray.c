@@ -106,7 +106,7 @@ static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
     returns: (type: cdyar_darray*) a pointer to the newly created dynamic array
    structure
 */
-int cdyar_narr(const size_t typesize, const size_t capacity,
+cdyar_returncode cdyar_narr(const size_t typesize, const size_t capacity,
                const cdyar_resizepolicy policy, const cdyar_typehandler handler,
                const cdyar_flag flags, cdyar_darray *outptr) {
 
@@ -201,7 +201,7 @@ int cdyar_narr(const size_t typesize, const size_t capacity,
           2) cdyar_returncode* code: a pointer to a returncode variable to
    report any error (if any) returns: void
 */
-int cdyar_darr(cdyar_darray *arr) {
+cdyar_returncode cdyar_darr(cdyar_darray *arr) {
   // make sure arr is not null
   if (!arr) {
     return CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
@@ -235,75 +235,76 @@ int cdyar_darr(cdyar_darray *arr) {
    cdyar_returncode variable to store whether the function was successful or not
     returns: void
 */
-void cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr,
-               cdyar_returncode *code) {
-  // check that code is not null
-  CDYAR_CHECK_CODE(code);
+cdyar_returncode cdyar_set(cdyar_darray *arr, const size_t index, void *valueptr) {
 
   // check that arr is not null
   if (!arr) {
-    *code = CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
-    return;
+    return CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
   }
+
+  // check that code is not null
+  CDYAR_CHECK_CODE(arr->code);
 
   // check that valueptr is not null
   if (!valueptr) {
-    *code = CDYAR_INVALID_INPUT;
-    return;
+    *arr->code = CDYAR_INVALID_INPUT;
+    return CDYAR_INVALID_INPUT;
   }
 
   // check that typesize is not zero
   if (arr->typesize == 0) {
-    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
-    return;
+    *arr->code = CDYAR_CORRUPTED_DYNAMIC_ARR;
+    return CDYAR_CORRUPTED_DYNAMIC_ARR;
   }
 
   // check for typesize overflow
   if (index > SIZE_MAX / arr->typesize) {
-    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
-    return;
+    *arr->code = CDYAR_CORRUPTED_DYNAMIC_ARR;
+    return CDYAR_CORRUPTED_DYNAMIC_ARR;
   }
 
   // check that an elements array actually exists within the dynamic array
   if (!arr->elements) {
-    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
-    return;
+    *arr->code = CDYAR_CORRUPTED_DYNAMIC_ARR;
+    return CDYAR_CORRUPTED_DYNAMIC_ARR;
   }
 
   // make sure a resize policy for the dynamic array exists
   if (!arr->policy) {
-    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
-    return;
+    *arr->code = CDYAR_CORRUPTED_DYNAMIC_ARR;
+    return CDYAR_CORRUPTED_DYNAMIC_ARR;
   }
 
   // make sure a type handler for the dynamic array exists
   if (!arr->handler) {
-    *code = CDYAR_CORRUPTED_DYNAMIC_ARR;
-    return;
+    *arr->code = CDYAR_CORRUPTED_DYNAMIC_ARR;
+    return CDYAR_CORRUPTED_DYNAMIC_ARR;
   }
 
   // bounds checking
   if (index >= arr->capacity) {
-    *code = CDYAR_ARR_OUT_OF_BOUNDS;
+    *arr->code = CDYAR_ARR_OUT_OF_BOUNDS;
 
     // return if the automatic resizing is not allowed
     if ((arr->flags & CDYAR_ARR_AUTO_RESIZE) == 0) {
-      return;
+      return CDYAR_ARR_OUT_OF_BOUNDS;
     }
     // invoke the dynamic array's resize policy
-    arr->policy(arr, index, code);
+    arr->policy(arr, index, arr->code);
   }
 
   // perform set operation if index is within bounds or a if the array was
   // successfully resized
-  if (*code == CDYAR_SUCCESSFUL) {
+  if (*arr->code == CDYAR_SUCCESSFUL) {
     // use a typehandler to perform this type of operation operation
     //((CUSTOM_TYPE*)arr->elements)[index] = *((CUSTOM_TYPE*)valueptr);
     // void ptr casted to char* to suppress compiler warnings
     arr->handler(((char *)(arr->elements)) + (arr->typesize * index), valueptr,
-                 CDYAR_DIRECTION_ASSIGN_RIGHT_TO_LEFT, code);
+                 CDYAR_DIRECTION_ASSIGN_RIGHT_TO_LEFT, arr->code);
     arr->length += 1;
   }
+
+  return *arr->code;
 }
 
 void cdyar_get(const cdyar_darray *arr, const size_t index, void *outptr,
