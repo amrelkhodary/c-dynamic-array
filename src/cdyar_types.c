@@ -1,5 +1,11 @@
 #include "../headers/cdyar_types.h"
 
+/*
+REMOVED CODE
+why -> replacd CDYAR_DEFINE_TYPE_HANDLER specific-type, typehandler function generating macro
+    -> with a truly generic typehandler function relying on memcpy instead of explicit typecasts
+
+
 // Character types
 CDYAR_DEFINE_TYPE_HANDLER(char, char)
 CDYAR_DEFINE_TYPE_HANDLER(signed char, schar)
@@ -38,3 +44,41 @@ CDYAR_DEFINE_TYPE_HANDLER(size_t, size)
 CDYAR_DEFINE_TYPE_HANDLER(ptrdiff_t, ptrdiff)
 CDYAR_DEFINE_TYPE_HANDLER(intptr_t, intptr)
 CDYAR_DEFINE_TYPE_HANDLER(uintptr_t, uintptr)
+*/
+
+//generic type handler function
+void cdyar_generic_typehandler(void *left_ptr, void *right_ptr,
+                                   cdyar_flag direction, size_t size, cdyar_returncode *code) {
+    /* Check code pointer is valid */
+    CDYAR_CHECK_CODE(code);
+
+    /* Validate input pointers */
+    if (!left_ptr) {
+        *code = CDYAR_INVALID_INPUT;
+        return;
+    }
+    if (!right_ptr) {
+        *code = CDYAR_INVALID_INPUT;
+        return;
+    }
+
+    /* Cast pointers - safe after alignment checks */
+    // type *internal_leftptr = (type *)left_ptr;
+    // type *internal_rightptr = (type *)right_ptr;
+
+    /* Perform assignment based on direction */
+    switch (direction) {
+        case CDYAR_DIRECTION_ASSIGN_LEFT_TO_RIGHT:
+            memcpy(right_ptr, left_ptr, size);
+            break;
+        case CDYAR_DIRECTION_ASSIGN_RIGHT_TO_LEFT:
+            memcpy(left_ptr, right_ptr, size);
+            break;
+        default:
+            *code = CDYAR_INVALID_INPUT;
+            return;
+    }
+
+    /* Success */
+    *code = CDYAR_SUCCESSFUL;
+}

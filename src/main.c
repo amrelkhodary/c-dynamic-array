@@ -8,15 +8,13 @@ typedef struct mycoolstruct {
 } mycoolstruct;
 //
 //
-CDYAR_DEFINE_TYPE_HANDLER(mycoolstruct, mycoolstruct)
 
 int main() {
-  cdyar_darray arr;
-  cdyar_returncode code = cdyar_narr(sizeof(mycoolstruct), 5, CDYAR_DEFAULT_RESIZE_POLICY,
-                                cdyar_mycoolstruct_typehandler, CDYAR_ARR_AUTO_RESIZE, &arr);
+  // cdyar_darray arr;
+  // cdyar_returncode code = cdyar_narr(sizeof(mycoolstruct), 5, CDYAR_DEFAULT_RESIZE_POLICY,
+                                // cdyar_generic_typehandler, CDYAR_ARR_AUTO_RESIZE, &arr);
 
-  // cdyar<mycoolstruct, mycoolstruct, 5> arr;
-  // cdyar(mycoolstruct, mycoolstruct, 5, arr)
+  NEW_CDYAR(arr, mycoolstruct, 5);
 
   mycoolstruct s =  {1 ,2};
   size_t count = 50;
@@ -37,7 +35,7 @@ int main() {
 
   cdyar_get(&arr, 80, &nvalue);
   cdyar_printstatus(&arr, stderr);
-  if(code == CDYAR_ARR_OUT_OF_BOUNDS) {
+  if(*arr.code == CDYAR_ARR_OUT_OF_BOUNDS) {
      printf("works fine.\n");
   }
 

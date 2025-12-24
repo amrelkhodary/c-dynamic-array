@@ -293,7 +293,7 @@ cdyar_returncode cdyar_set(cdyar_darray *arr, const size_t index,
     //((CUSTOM_TYPE*)arr->elements)[index] = *((CUSTOM_TYPE*)valueptr);
     // void ptr casted to char* to suppress compiler warnings
     arr->handler(((char *)(arr->elements)) + (arr->typesize * index), valueptr,
-                 CDYAR_DIRECTION_ASSIGN_RIGHT_TO_LEFT, arr->code);
+                 CDYAR_DIRECTION_ASSIGN_RIGHT_TO_LEFT, arr->typesize, arr->code);
     arr->length += 1;
   }
 
@@ -349,7 +349,7 @@ cdyar_returncode cdyar_get(const cdyar_darray *arr, const size_t index,
   // assign outptr to a pointer to the element in question in the array
   // void ptr converted to char* to suppress compiler warnings
   arr->handler(((char *)(arr->elements)) + (arr->typesize * index), outptr,
-               CDYAR_DIRECTION_ASSIGN_LEFT_TO_RIGHT, arr->code);
+               CDYAR_DIRECTION_ASSIGN_LEFT_TO_RIGHT, arr->typesize, arr->code);
 
   /**code=CDYAR_SUCCESSFUL*/ // uneccessary since handler will determine code
                              // anyways + it could hide handler failure`
