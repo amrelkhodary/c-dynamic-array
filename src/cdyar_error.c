@@ -16,7 +16,8 @@ const char *CDYAR_ERR_MESSAGES[CDYAR_ERR_CODE_COUNT] = {
     "arithmeitc operation involved a value or resulted in a value that is not "
     "a valid number. (NaN)\n",
     "passed a negative exponent to a function that expects positive "
-    "exponenets.\n"};
+    "exponenets.\n",
+    "invalid dynamic array declaration.\n"};
 
 const char *cdyar_geterrmsg(cdyar_returncode *code) {
   // check that code is not null

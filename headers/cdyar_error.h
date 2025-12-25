@@ -1,6 +1,6 @@
 #ifndef H_CDYAR_ERROR
     #define H_CDYAR_ERROR
-    #define CDYAR_ERR_CODE_COUNT 12
+    #define CDYAR_ERR_CODE_COUNT 13
 
     #include <stdio.h> //for fprintf in CDYAR_CHECK_CODE
     #include <stdlib.h>
@@ -32,6 +32,7 @@
         CDYAR_CORRUPTED_DYNAMIC_ARR,
         CDYAR_ARITHMETIC_NOT_A_NUMBER,
         CDYAR_ARITHMETIC_NEGATIVE_EXPONENT,
+        CDYAR_INVALID_DARR_DECLARATION,
 
     };
 
