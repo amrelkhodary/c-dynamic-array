@@ -35,15 +35,15 @@ static void areFlagsValid(const cdyar_flag flags, cdyar_bool *outptr,
 /*
     internal function (type: resizepolicy)
     default resize policy provided by cdyar for the dynamic array data type. It
-   performs a 2x resize if the index out of bounds is within 2x of the current
-   range.
+   performs a 2x resize if the index out of bounds if ONE more than the last
+   index out of bounds.
 
     argss: 1) cdyar_darray* arr     : a pointer to the dynamic array
            2) const size_t index    : the index the user tried to insert in
            3) cdyar_returncode* code: a pointer to a returncode variable to
    store status returns: void
 */
-static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
+static void cdyar_default_resize_policy(cdyar_darray *arr,
                                         cdyar_returncode *code) {
   // don't forget to update arr->length after resize!
   // dont't forget to update code!
@@ -70,11 +70,9 @@ static void cdyar_default_resize_policy(cdyar_darray *arr, const size_t index,
     return;
   }
 
-  // bounds checking
-  // check that index is within the range the warrants a resize as specified by
-  // this policy i.e. check that length <= index <= length * 2
-  if (!(index >= arr->capacity && index <= arr->capacity * 2)) {
-    *code = CDYAR_RESIZE_POLICY_INVALID_RANGE;
+  // make sure that length is actually equal to capacity
+  if (arr->length != arr->capacity) {
+    *code = CDYAR_INVALID_INPUT;
     return;
   }
 
@@ -194,7 +192,6 @@ cdyar_returncode cdyar_narr(const size_t typesize, const size_t capacity,
    report any error (if any) returns: void
 */
 
-
 cdyar_returncode cdyar_darr(cdyar_darray *arr) {
   // make sure arr is not null
   if (!arr) {
@@ -216,7 +213,6 @@ cdyar_returncode cdyar_darr(cdyar_darray *arr) {
 
   return tempcode;
 }
-
 
 /*
     safely set an element at a particular index in a dynamic array to a value
@@ -274,31 +270,46 @@ cdyar_returncode cdyar_set(cdyar_darray *arr, const size_t index,
     return CDYAR_CORRUPTED_DYNAMIC_ARR;
   }
 
-  // bounds checking
-  if (index >= arr->capacity) {
-    *arr->code = CDYAR_ARR_OUT_OF_BOUNDS;
-
-    // return if the automatic resizing is not allowed
-    if ((arr->flags & CDYAR_ARR_AUTO_RESIZE) == 0) {
+  //make sure that the user is either adding a new element right after the position of the last element
+  //or that he is replacing an old element
+  if(index > arr->length) {
+      *arr->code = CDYAR_ARR_OUT_OF_BOUNDS;
       return CDYAR_ARR_OUT_OF_BOUNDS;
-    }
-    // invoke the dynamic array's resize policy
-    arr->policy(arr, index, arr->code);
-  }
+  } else if(index < arr->length) {
+      //no resize needed, simply just do the assignment using the array's handler
+      arr->handler(((char *)(arr->elements)) + (arr->typesize * index), valueptr,
+                    CDYAR_DIRECTION_ASSIGN_RIGHT_TO_LEFT, arr->typesize,
+                    arr->code);
+  } else {
+     //user is adding appending a new element to the array
+     //make sure there is enough capacity
+     if(arr->length == arr->capacity) {
+         //currently, length equals capacity, so adding a new element would make length exceed capacity
+         //thus, a resize is needed
+         //invoke the array resizepolicy
+         arr->policy(arr, arr->code);
+     }
 
-  // perform set operation if index is within bounds or a if the array was
-  // successfully resized
-  if (*arr->code == CDYAR_SUCCESSFUL) {
-    // use a typehandler to perform this type of operation operation
-    //((CUSTOM_TYPE*)arr->elements)[index] = *((CUSTOM_TYPE*)valueptr);
-    // void ptr casted to char* to suppress compiler warnings
-    arr->handler(((char *)(arr->elements)) + (arr->typesize * index), valueptr,
-                 CDYAR_DIRECTION_ASSIGN_RIGHT_TO_LEFT, arr->typesize, arr->code);
-    arr->length += 1;
+     //only proceed if the resize was successful
+     if(*arr->code == CDYAR_SUCCESSFUL) {
+         //resize was successful
+         //perform the assignment using the array's handler
+         //increment the length by one
+         arr->handler(((char *)(arr->elements)) + (arr->typesize * index), valueptr,
+                             CDYAR_DIRECTION_ASSIGN_RIGHT_TO_LEFT, arr->typesize,
+                             arr->code);
+         arr->length += 1;
+     }
   }
 
   return *arr->code;
 }
+
+/*
+ * arr->handler(((char *)(arr->elements)) + (arr->typesize * index), valueptr,
+              CDYAR_DIRECTION_ASSIGN_RIGHT_TO_LEFT, arr->typesize,
+              arr->code);
+ */
 
 cdyar_returncode cdyar_get(const cdyar_darray *arr, const size_t index,
                            void *outptr) {
@@ -367,7 +378,7 @@ cdyar_returncode cdyar_setflags(cdyar_darray *arr, const cdyar_flag flags) {
   CDYAR_CHECK_CODE(arr->code);
 
   // make sure the flags are valid
-  cdyar_bool flags_valid;
+  cdyar_bool flags_valid = cdyar_false;
   areFlagsValid(flags, &flags_valid, arr->code);
   if (*arr->code != CDYAR_SUCCESSFUL) {
     // an issue occurred in areFlagsValid, propagte the error upwards
