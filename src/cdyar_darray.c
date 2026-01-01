@@ -305,6 +305,83 @@ cdyar_returncode cdyar_set(cdyar_darray *arr, const size_t index,
   return *arr->code;
 }
 
+static
+void*
+cdyar_getptr(cdyar_darray* arr, size_t index) {
+   return ((char*) arr->elements) + (arr->typesize * index);
+}
+
+static
+cdyar_returncode
+cdyar_shiftleft(cdyar_darray* arr, size_t start){
+    //check that arr is not null
+    if(!arr) {
+        return CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
+    }
+
+    //check that code is not null
+    CDYAR_CHECK_CODE(arr->code);
+
+    //check that index is within allowed bounds
+    if(start >= arr->length - 1) {
+        *arr->code = CDYAR_INVALID_INPUT;
+        return CDYAR_INVALID_INPUT;
+    }
+
+    //starting the left shift operation
+    size_t left_index = start;
+    size_t right_index = start + 1;
+
+    while(right_index != arr->length) {
+        //copy the element at the right_index into left_index
+        memcpy(cdyar_getptr(arr, left_index), cdyar_getptr(arr, right_index), arr->typesize);
+
+        left_index++;
+        right_index++;
+    }
+
+    *arr->code = CDYAR_SUCCESSFUL;
+    return CDYAR_SUCCESSFUL;
+}
+
+cdyar_returncode
+cdyar_rm(cdyar_darray* arr, const size_t index) {
+   //check that arr is not null
+   if(!arr) {
+       return CDYAR_DYNAMIC_ARR_DOES_NOT_EXIST;
+   }
+
+   //check that code is not null
+   CDYAR_CHECK_CODE(arr->code);
+
+   //check for out of bounds
+   if(index >= arr->length) {
+      *arr->code = CDYAR_INVALID_INPUT;
+      return CDYAR_INVALID_INPUT;
+   }
+
+   if(index == arr->length - 1) {
+       //last element
+       //simply jsut decrease length by one
+       arr->length--;
+       *arr->code = CDYAR_SUCCESSFUL;
+       return CDYAR_SUCCESSFUL;
+   }
+
+   //otherwise, shift all elements after it one step to the left
+   cdyar_shiftleft(arr, index);
+   if(*arr->code != CDYAR_SUCCESSFUL) {
+       //err happened in cdyar_shiftleft, propagate it upwards
+       return *arr->code;
+   }
+
+   arr->length--;
+   /*arr->code = CDYAR_SUCCESSFUL */ //no need to do that since cdyar_shiftleft will set the code
+   return CDYAR_SUCCESSFUL;
+}
+
+
+
 /*
  * arr->handler(((char *)(arr->elements)) + (arr->typesize * index), valueptr,
               CDYAR_DIRECTION_ASSIGN_RIGHT_TO_LEFT, arr->typesize,

@@ -1,7 +1,7 @@
 /**
  * @file cdyar_darray.h
  * @brief Dynamic array implementation with automatic resizing and type safety
- * 
+ *
  * This file provides the core dynamic array functionality including creation,
  * destruction, element access, and automatic memory management.
  */
@@ -25,7 +25,7 @@
 /**
  * @enum cdyar_darray_binflags
  * @brief Binary flags that control dynamic array behavior
- * 
+ *
  * These flags can be combined using bitwise OR to enable multiple features.
  */
 enum cdyar_darray_binflags {
@@ -36,11 +36,11 @@ enum cdyar_darray_binflags {
 /**
  * @typedef cdyar_resizepolicy
  * @brief Function pointer type for custom resize policy implementations
- * 
+ *
  * Resize policies determine how the array's capacity changes when it needs
  * to grow. Custom policies can implement different growth strategies
  * (e.g., doubling, linear growth, etc.).
- * 
+ *
  * @param arr Pointer to the dynamic array to resize
  * @param code Pointer to return code for error reporting
  */
@@ -50,7 +50,7 @@ typedef void (*cdyar_resizepolicy)(struct cdyar_darray *arr,
 /**
  * @struct cdyar_darray
  * @brief Dynamic array structure with automatic memory management
- * 
+ *
  * This structure represents a dynamically-sized array that can grow
  * automatically and works with any data type through type handlers.
  */
@@ -67,10 +67,10 @@ typedef struct cdyar_darray {
 
 /**
  * @brief Creates a new dynamic array
- * 
+ *
  * Allocates and initializes a new dynamic array with the specified parameters.
  * The array must be destroyed with cdyar_darr() when no longer needed.
- * 
+ *
  * @param typesize Size in bytes of each element
  * @param capacity Initial capacity (number of elements to allocate space for)
  * @param policy Resize policy function, or CDYAR_DEFAULT_RESIZE_POLICY for default
@@ -86,11 +86,11 @@ cdyar_returncode cdyar_narr(const size_t typesize, const size_t capacity,
 
 /**
  * @brief Destroys a dynamic array and frees its memory
- * 
+ *
  * Deallocates the array's internal buffer and resets all fields.
  * After calling this function, the array should not be used unless
  * reinitialized with cdyar_narr().
- * 
+ *
  * @param arr Pointer to the dynamic array to destroy
  * @return CDYAR_SUCCESSFUL on success, error code otherwise
  */
@@ -98,11 +98,11 @@ cdyar_returncode cdyar_darr(cdyar_darray *arr);
 
 /**
  * @brief Sets an element at the specified index
- * 
+ *
  * Copies the value pointed to by valueptr into the array at the given index.
  * If CDYAR_ARR_AUTO_RESIZE flag is set and index is out of bounds, the array
  * will automatically resize to accommodate the new element.
- * 
+ *
  * @param arr Pointer to the dynamic array
  * @param index Index where the element should be stored
  * @param valueptr Pointer to the value to copy into the array
@@ -113,12 +113,15 @@ cdyar_returncode
 cdyar_set(cdyar_darray *arr, const size_t index,
           void *valueptr);
 
+cdyar_returncode
+cdyar_rm(cdyar_darray* arr, const size_t index);
+
 /**
  * @brief Gets an element at the specified index
- * 
+ *
  * Copies the element at the given index into the memory pointed to by outptr.
  * Performs bounds checking to ensure the index is valid.
- * 
+ *
  * @param arr Pointer to the dynamic array
  * @param index Index of the element to retrieve
  * @param outptr Pointer to memory where the element will be copied
@@ -130,10 +133,10 @@ cdyar_returncode cdyar_get(const cdyar_darray *arr, const size_t index,
 
 /**
  * @brief Sets the flags for a dynamic array
- * 
+ *
  * Updates the behavior flags of the array. Flags can be combined using
  * bitwise OR to enable multiple features simultaneously.
- * 
+ *
  * @param arr Pointer to the dynamic array
  * @param flags New flags value (see cdyar_darray_binflags)
  * @return CDYAR_SUCCESSFUL on success, error code otherwise
@@ -142,10 +145,10 @@ cdyar_returncode cdyar_setflags(cdyar_darray *arr, const cdyar_flag flags);
 
 /**
  * @brief Sets the resize policy for a dynamic array
- * 
+ *
  * Changes the function used to determine how the array grows when it needs
  * more capacity. Pass CDYAR_DEFAULT_RESIZE_POLICY to use the default policy.
- * 
+ *
  * @param arr Pointer to the dynamic array
  * @param policy New resize policy function pointer
  * @return CDYAR_SUCCESSFUL on success, error code otherwise
